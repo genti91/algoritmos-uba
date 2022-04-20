@@ -86,3 +86,5 @@ void *cola_desencolar(cola_t *cola){
 	cola->primero = nodo_prox;
 	return primer_dato;
 }
+
+// amobu
