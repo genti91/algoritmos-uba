@@ -4,9 +4,9 @@
 int main(int argc, char const *argv[])
 {
     FILE* archivo = fopen(argv[2], "r");
-    FILE* archivo_escrito = fopen("test.txt", "w");
+    FILE* archivo_auxiliar = fopen("archivo_auxiliar.txt", "w");
 
-    if (archivo == NULL || archivo_escrito == NULL){
+    if (archivo == NULL || archivo_auxiliar == NULL){
         perror("No se pudo abrir el archivo!\n");
         return -1;
     }
@@ -19,18 +19,20 @@ int main(int argc, char const *argv[])
         if (contador == atoi(argv[1]) + 1)
         {
             printf("\n");
-            fputc('\n', archivo_escrito);
+            fputc('\n', archivo_auxiliar);
             contador = 1;
         }
         
         printf("%c", char_leido);
-        fputc(char_leido, archivo_escrito);
+        fputc(char_leido, archivo_auxiliar);
         char_leido = fgetc(archivo);
         contador++;
     }
 
+    
+    fclose(archivo_auxiliar);
+    //rename("archivo_auxiliar.txt", argv[2]);
     fclose(archivo);
-    fclose(archivo_escrito);
     
     return 0;
 }
