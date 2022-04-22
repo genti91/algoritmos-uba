@@ -16,17 +16,29 @@ static void prueba_cola_crear(void) {
 
 static void prueba_cola_vacia(void) {
     cola_t* cola = cola_crear();
+    print_test("La cola fue creada", cola != NULL);
+    int* valor = malloc(sizeof(int));
+    *valor = 5;
+    cola_encolar(cola, valor);
+    int* tope = cola_ver_primero(cola);
+    print_test("El tope es correcto", *tope == *valor);
+    int* resultado = cola_desencolar(cola);
+    print_test("La cola se desencolo correctamente", resultado == valor);
     print_test("La cola está vacía", cola_esta_vacia(cola));
     cola_destruir(cola, NULL);
+    free(valor);
 }
 
 static void prueba_cola_apilar_desapilar(void) {
     cola_t* cola = cola_crear();
     int* valor = malloc(sizeof(int));
     *valor = 5;
+    print_test("La cola y el valor fueron creados", cola != NULL && valor != NULL);
     cola_encolar(cola, valor);
+    int* tope = cola_ver_primero(cola);
+    print_test("El tope es correcto", *tope == *valor);
     int* resultado = cola_desencolar(cola);
-    print_test("La cola se apila y desapila", resultado == valor);
+    print_test("La cola se encola y desencola correctamente", resultado == valor);
     free(valor);
     cola_destruir(cola, NULL);
 }
@@ -83,15 +95,11 @@ static void prueba_desapilar_y_ver_tope_en_pila_que_se_desapilo(void){
 static void prueba_cola_volumen(void){
     cola_t* cola = cola_crear();
     int datos[CANTIDAD_DE_DATOS_A_ENCOLAR];
-    int **ptr_datos;
     bool resultados_correctos = true;
-
-    ptr_datos = malloc(CANTIDAD_DE_DATOS_A_ENCOLAR * sizeof(int*));
 
     for (int i = 0; i < CANTIDAD_DE_DATOS_A_ENCOLAR; ++i){
         datos[i] = i+1;
-        ptr_datos[i] = &datos[i];
-        cola_encolar(cola, ptr_datos[i]);
+        cola_encolar(cola, &datos[i]);
         int* dato = cola_desencolar(cola);
         if (*dato != i+1){
             resultados_correctos = false;
@@ -102,7 +110,6 @@ static void prueba_cola_volumen(void){
 
     print_test("La cola se desencolo completamente y se comporta como nueva", cola_desencolar(cola) == NULL && cola_ver_primero(cola) == NULL && cola_esta_vacia(cola));
 
-    free(ptr_datos);
     cola_destruir(cola, NULL);
 }
 
