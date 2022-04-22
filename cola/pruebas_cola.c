@@ -125,6 +125,28 @@ static void prueba_destruir_cola_y_no_datos(void){
     free(valor);
 }
 
+static void prueba_destruir_cola_y_datos_con_free(void){
+    cola_t* cola = cola_crear();
+    int* valor = malloc(sizeof(int));
+    *valor = 5;
+    cola_encolar(cola, valor);
+    int* valor_tope = cola_ver_primero(cola);
+    print_test("La cola se encolo correctamente", *valor_tope == *valor);
+    cola_destruir(cola, free);
+    print_test("La cola y sus datos se destruyeron", valor);
+}
+
+static void prueba_destruir_cola_y_datos_con_fucion(void){
+    cola_t* cola = cola_crear();
+    int* valor = malloc(sizeof(int));
+    *valor = 5;
+    cola_encolar(cola, valor);
+    int* valor_tope = cola_ver_primero(cola);
+    print_test("La cola se encolo correctamente", *valor_tope == *valor);
+    cola_destruir(cola, destruir_datos);
+    print_test("La cola y sus datos se destruyeron", valor);
+}
+
 
 void pruebas_cola_estudiante() {
     prueba_cola_crear();
@@ -136,6 +158,8 @@ void pruebas_cola_estudiante() {
     prueba_desapilar_y_ver_tope_en_pila_que_se_desapilo();
     prueba_cola_volumen();
     prueba_destruir_cola_y_no_datos();
+    prueba_destruir_cola_y_datos_con_free();
+    prueba_destruir_cola_y_datos_con_fucion();
 }
 
 

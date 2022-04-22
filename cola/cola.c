@@ -24,22 +24,12 @@ cola_t *cola_crear(void){
 }
 
 void cola_destruir(cola_t *cola, void (*destruir_dato)(void *)){
-	if (cola_esta_vacia(cola)){
-		free(cola);
-		return;
-	}
-	while(cola->primero->prox != NULL){
-		nodo_t* nodo_prox = cola->primero->prox;
+	while(!cola_esta_vacia(cola)){
 		if (destruir_dato != NULL){
 			destruir_dato(cola->primero->dato);
 		}
-		free(cola->primero);
-		cola->primero = nodo_prox;
+		cola_desencolar(cola);
 	}
-	if (destruir_dato != NULL){
-		destruir_dato(cola->primero->dato);
-	}
-	free(cola->primero);
 	free(cola);
 }
 
