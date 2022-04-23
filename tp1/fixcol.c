@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
                 }
             }
 
-            if (!tiene_enter && linea != NULL){
+            if (!tiene_enter){
                 fputc('\n', stdout);
             }
         }
