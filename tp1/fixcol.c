@@ -1,13 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char const *argv[])
-{
-    FILE* archivo = fopen(argv[2], "r");
-    FILE* archivo_auxiliar = fopen("archivo_auxiliar.txt", "w");
+{   
+    if (!atoi(argv[1]))
+    {
+        perror("Error: Cantidad erronea de parametros\n");
+        return -1;
+    }
+    
+    int parametro = argc;
 
-    if (archivo == NULL || archivo_auxiliar == NULL){
-        perror("No se pudo abrir el archivo!\n");
+    /*if (strcmp(argv[2], "<"))
+    {
+        parametro = 3;
+    }*/
+
+    printf("%d", parametro);
+    return -1;
+    
+    printf("%s", argv[parametro]);
+    return -1;
+
+    FILE* archivo = fopen(argv[parametro], "r");
+    FILE* archivo_fixed = fopen("fixed.txt", "w");
+
+    if (archivo == NULL || archivo_fixed == NULL){
+        perror("Error: Error: archivo fuente inaccesible\n");
         return -1;
     }
 
@@ -19,19 +39,18 @@ int main(int argc, char const *argv[])
         if (contador == atoi(argv[1]) + 1)
         {
             printf("\n");
-            fputc('\n', archivo_auxiliar);
+            fputc('\n', archivo_fixed);
             contador = 1;
         }
         
         printf("%c", char_leido);
-        fputc(char_leido, archivo_auxiliar);
+        fputc(char_leido, archivo_fixed);
         char_leido = fgetc(archivo);
         contador++;
     }
 
     
-    fclose(archivo_auxiliar);
-    //rename("archivo_auxiliar.txt", argv[2]);
+    fclose(archivo_fixed);
     fclose(archivo);
     
     return 0;
