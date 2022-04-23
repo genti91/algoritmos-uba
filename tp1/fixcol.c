@@ -1,57 +1,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 int main(int argc, char const *argv[])
 {   
-    if (!atoi(argv[1]))
+    if (argc < 2 || argc > 3)
     {
         perror("Error: Cantidad erronea de parametros\n");
         return -1;
     }
-    
-    int parametro = argc;
 
-    /*if (strcmp(argv[2], "<"))
+    int max_chars = atoi(argv[1]) + 1;
+
+    if (argc == 2)
     {
-        parametro = 3;
-    }*/
+        char linea[max_chars];
 
-    printf("%d", parametro);
-    return -1;
-    
-    printf("%s", argv[parametro]);
-    return -1;
+        while (fgets(linea, max_chars, stdin) != NULL)
+        {   
+            fputs(linea, stdout);
 
-    FILE* archivo = fopen(argv[parametro], "r");
-    FILE* archivo_fixed = fopen("fixed.txt", "w");
+            bool tiene_enter = false;
 
-    if (archivo == NULL || archivo_fixed == NULL){
-        perror("Error: Error: archivo fuente inaccesible\n");
+            for (int i = 0; i < max_chars; i++){
+                if (linea[i] == '\n'){
+                    tiene_enter = true;
+                }
+            }
+
+            if (!tiene_enter && linea != NULL){
+                fputc('\n', stdout);
+            }
+        }
+        return 0;
+    }
+
+    FILE* archivo = fopen(argv[2], "r");
+
+    if (archivo == NULL){
+        perror("Error: archivo fuente inaccesible\n");
         return -1;
     }
 
-    int char_leido = fgetc(archivo);
-    int contador = 1;
+    char linea[max_chars];
 
-    while (char_leido != EOF)
-    {   
-        if (contador == atoi(argv[1]) + 1)
-        {
-            printf("\n");
-            fputc('\n', archivo_fixed);
-            contador = 1;
-        }
+    while (fgets(linea, max_chars, archivo) != NULL)
+    {
+        fputs(linea, stdout);
         
-        printf("%c", char_leido);
-        fputc(char_leido, archivo_fixed);
-        char_leido = fgetc(archivo);
-        contador++;
+        bool tiene_enter = false;
+
+        for (int i = 0; i < max_chars; i++){
+            if (linea[i] == '\n'){
+                tiene_enter = true;
+            }
+        }
+
+        if (!tiene_enter){
+            fputc('\n', stdout);
+        }
+
     }
 
-    
-    fclose(archivo_fixed);
     fclose(archivo);
-    
+
     return 0;
 }
