@@ -29,26 +29,34 @@ void separar_texto(FILE* texto, int max_chars){
     while ((getline(&linea, &tam, texto)) != EOF)
     {   
         int contador = 1;
+        bool enter = true;
         for (size_t i = 0; i < strlen(linea); i++)
         {   
-            if (linea[i] != '\n')
+            if (linea[i] != '\n' || enter)
             {
                 fputc(linea[i], stdout);
             }
 
-            if (contador == max_chars && linea[i] != '\n')
+            if (contador == max_chars /*&& linea[i] != '\n'*/)
             {
                 fputc('\n', stdout);
+                enter = false;
                 contador = 0;
             }
+
+            if (linea[i] == '.' && linea[i+1] == '\n')
+            {
+                enter = true;
+            }
+            
             contador++;
         }
 
-        if (strlen(linea)-2 != max_chars)
+        /*if (strlen(linea)-2 != max_chars)
         {
             fputc('\n', stdout);
                 
-        }
+        }*/
     }
     free(linea);
 }
