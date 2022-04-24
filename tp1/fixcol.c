@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,65 +6,78 @@
 
 int main(int argc, char const *argv[])
 {   
-    if (argc < 2 || argc > 3)
+    /*if (argc < 2 || argc > 3 || !atoi(argv[1]))
     {
-        perror("Error: Cantidad erronea de parametros\n");
+        fputs("Error: Cantidad erronea de parametros\n", stderr);
         return -1;
-    }
+    }*/
+    printf("amobu %s", argv[1]);
+    //int max_chars = atoi(argv[1]) + 1;
+    
+    //if (argc == 2)
+    //{
+        char* linea;
+        size_t tam;
+        while ((getline(&linea, &tam, stdin)) != EOF)
+        {
+            printf("%s", linea);
+        }
+        free(linea);
+        return 0;
+    //}
 
-    int max_chars = atoi(argv[1]) + 1;
 
-    if (argc == 2)
+
+    /*if (argc == 2)
     {
-        char linea[max_chars];
+        char cadena[max_chars];
 
-        while (fgets(linea, max_chars, stdin) != NULL)
+        while (fgets(cadena, max_chars, stdin) != NULL)
         {   
-            fputs(linea, stdout);
+            fputs(cadena, stdout);
 
             bool tiene_enter = false;
 
             for (int i = 0; i < max_chars; i++){
-                if (linea[i] == '\n'){
+                if (cadena[i] == '\n'){
                     tiene_enter = true;
                 }
             }
-
             if (!tiene_enter){
                 fputc('\n', stdout);
             }
         }
         return 0;
-    }
+    }*/
 
-    FILE* archivo = fopen(argv[2], "r");
+/*    FILE* archivo = fopen(argv[2], "r");
 
     if (archivo == NULL){
-        perror("Error: archivo fuente inaccesible\n");
+        fputs("Error: archivo fuente inaccesible\n", stderr);
         return -1;
     }
 
-    char linea[max_chars];
+    char cadena[max_chars];
 
-    while (fgets(linea, max_chars, archivo) != NULL)
+    while (fgets(cadena, max_chars, archivo) != NULL)
     {
-        fputs(linea, stdout);
+        fputs(cadena, stdout);
         
         bool tiene_enter = false;
 
         for (int i = 0; i < max_chars; i++){
-            if (linea[i] == '\n'){
+            if (cadena[i] == '\n'){
                 tiene_enter = true;
             }
         }
 
-        if (!tiene_enter){
+        if (!tiene_enter && strlen(cadena) != max_chars-1){
             fputc('\n', stdout);
         }
 
     }
 
     fclose(archivo);
-
+*/
     return 0;
 }
