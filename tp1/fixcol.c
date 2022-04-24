@@ -4,80 +4,77 @@
 #include <string.h>
 #include <stdbool.h>
 
-int main(int argc, char const *argv[])
-{   
-    /*if (argc < 2 || argc > 3 || !atoi(argv[1]))
+bool chequear_parametros(int argc, char const *argv){
+    if (argc < 2 || argc > 3 || !atoi(argv))
     {
         fputs("Error: Cantidad erronea de parametros\n", stderr);
-        return -1;
-    }*/
-    printf("amobu %s", argv[1]);
-    //int max_chars = atoi(argv[1]) + 1;
-    
-    //if (argc == 2)
-    //{
-        char* linea;
-        size_t tam;
-        while ((getline(&linea, &tam, stdin)) != EOF)
-        {
-            printf("%s", linea);
-        }
-        free(linea);
-        return 0;
-    //}
+        return false;
+    }
+    return true;
+}
 
-
-
-    /*if (argc == 2)
-    {
-        char cadena[max_chars];
-
-        while (fgets(cadena, max_chars, stdin) != NULL)
-        {   
-            fputs(cadena, stdout);
-
-            bool tiene_enter = false;
-
-            for (int i = 0; i < max_chars; i++){
-                if (cadena[i] == '\n'){
-                    tiene_enter = true;
-                }
-            }
-            if (!tiene_enter){
-                fputc('\n', stdout);
-            }
-        }
-        return 0;
-    }*/
-
-/*    FILE* archivo = fopen(argv[2], "r");
-
+FILE* abrir_archivo(char const *nombre_de_archivo){
+    FILE* archivo = fopen(nombre_de_archivo, "r");
     if (archivo == NULL){
         fputs("Error: archivo fuente inaccesible\n", stderr);
+        return NULL;
+    }
+    return archivo;
+}
+
+void separar_texto(FILE* texto, int max_chars){
+    char* linea = NULL;
+    size_t tam;
+
+    while ((getline(&linea, &tam, texto)) != EOF)
+    {   
+        int contador = 1;
+        for (size_t i = 0; i < strlen(linea); i++)
+        {   
+            if (linea[i] != '\n')
+            {
+                fputc(linea[i], stdout);
+            }
+
+            if (contador == max_chars && linea[i] != '\n')
+            {
+                fputc('\n', stdout);
+                contador = 0;
+            }
+            contador++;
+        }
+
+        if (strlen(linea)-2 != max_chars)
+        {
+            fputc('\n', stdout);
+                
+        }
+    }
+    free(linea);
+}
+
+int main(int argc, char const *argv[])
+{   
+    if (!chequear_parametros(argc, argv[1])){
         return -1;
     }
 
-    char cadena[max_chars];
+    int max_chars = atoi(argv[1]);
 
-    while (fgets(cadena, max_chars, archivo) != NULL)
-    {
-        fputs(cadena, stdout);
-        
-        bool tiene_enter = false;
+    FILE* texto = stdin;
 
-        for (int i = 0; i < max_chars; i++){
-            if (cadena[i] == '\n'){
-                tiene_enter = true;
-            }
+    if (argc == 3){
+        texto = abrir_archivo(argv[2]);
+        if (texto == NULL){
+            return -1;
         }
-
-        if (!tiene_enter && strlen(cadena) != max_chars-1){
-            fputc('\n', stdout);
-        }
-
     }
 
-    fclose(archivo);
-*/
+    separar_texto(texto, max_chars);
+
+    if (argc == 3){
+        fclose(texto);
+    }
+
     return 0;
 }
