@@ -115,6 +115,7 @@ static void prueba_cola_volumen(void){
 
 static void prueba_destruir_cola_y_no_datos(void){
     cola_t* cola = cola_crear();
+    print_test("La cola fue creada", cola != NULL);
     int* valor = malloc(sizeof(int));
     *valor = 5;
     cola_encolar(cola, valor);
@@ -127,6 +128,7 @@ static void prueba_destruir_cola_y_no_datos(void){
 
 static void prueba_destruir_cola_y_datos_con_free(void){
     cola_t* cola = cola_crear();
+    print_test("La cola fue creada", cola != NULL);
     int* valor = malloc(sizeof(int));
     *valor = 5;
     cola_encolar(cola, valor);
@@ -138,6 +140,7 @@ static void prueba_destruir_cola_y_datos_con_free(void){
 
 static void prueba_destruir_cola_y_datos_con_fucion(void){
     cola_t* cola = cola_crear();
+    print_test("La cola fue creada", cola != NULL);
     int* valor = malloc(sizeof(int));
     *valor = 5;
     cola_encolar(cola, valor);
