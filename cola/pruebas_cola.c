@@ -135,7 +135,6 @@ static void prueba_destruir_cola_y_datos_con_free(void){
     int* valor_tope = cola_ver_primero(cola);
     print_test("La cola se encolo correctamente", *valor_tope == *valor);
     cola_destruir(cola, free);
-    print_test("La cola y sus datos se destruyeron", valor);
 }
 
 static void prueba_destruir_cola_y_datos_con_fucion(void){
@@ -147,7 +146,6 @@ static void prueba_destruir_cola_y_datos_con_fucion(void){
     int* valor_tope = cola_ver_primero(cola);
     print_test("La cola se encolo correctamente", *valor_tope == *valor);
     cola_destruir(cola, destruir_datos);
-    print_test("La cola y sus datos se destruyeron", valor);
 }
 
 
