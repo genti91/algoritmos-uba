@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-
 typedef struct nodo nodo_t;
 
 struct nodo {
@@ -19,6 +18,9 @@ struct lista {
 struct lista_iter {
 	nodo_t* actual;
 	nodo_t* anterior;
+	nodo_t** primero;
+	nodo_t** ultimo;
+	size_t* largo;
 };
 
 lista_t *lista_crear(void){
@@ -128,13 +130,19 @@ void lista_iterar(lista_t *lista, bool visitar(void *dato, void *extra), void *e
 
 lista_iter_t *lista_iter_crear(lista_t *lista){
 	lista_iter_t* iter = malloc(sizeof(lista_iter_t));
+	if (iter == NULL){
+		return NULL;
+	}
 	iter->actual = lista->primero;
 	iter->anterior = NULL;
+	iter->largo = &(lista->largo);
+	iter->primero = &(lista->primero);
+	iter->ultimo = &(lista->ultimo);
 	return iter;
 }
 
 bool lista_iter_avanzar(lista_iter_t *iter){
-	if (iter->actual->prox == NULL) return false;	
+	if (lista_iter_al_final(iter)) return false;	
 	nodo_t* nodo_aux = iter->actual;
 	iter->actual = nodo_aux->prox;
 	iter->anterior = nodo_aux;
@@ -142,11 +150,14 @@ bool lista_iter_avanzar(lista_iter_t *iter){
 }
 
 void *lista_iter_ver_actual(const lista_iter_t *iter){
+	if (iter->actual == NULL) {
+		return NULL;
+	}
 	return iter->actual->dato;
 }
 
 bool lista_iter_al_final(const lista_iter_t *iter){
-	return (iter->actual->prox == NULL);
+	return (iter->actual == NULL);
 }
 
 void lista_iter_destruir(lista_iter_t *iter){
@@ -156,15 +167,38 @@ void lista_iter_destruir(lista_iter_t *iter){
 bool lista_iter_insertar(lista_iter_t *iter, void *dato){
 	nodo_t* nodo_nuevo = crear_nodo(dato);
 	if (nodo_nuevo == NULL) return false;
-	iter->anterior->prox = nodo_nuevo;
+	if (iter->actual == *(iter->primero)) {
+		(*iter->primero) = nodo_nuevo;
+	}
+	if (iter->actual == NULL) {
+		(*iter->ultimo) = nodo_nuevo;
+	}
+	if (iter->anterior != NULL) {
+		iter->anterior->prox = nodo_nuevo;
+	}
 	nodo_nuevo->prox = iter->actual;
 	iter->actual = nodo_nuevo;
+	(*iter->largo)++;
 	return true;
 }
-void *lista_iter_borrar(lista_iter_t *iter){
+
+void *lista_iter_borrar(lista_iter_t *iter) {
 	nodo_t* nodo_aux = iter->actual;
-	iter->anterior = iter->actual->prox;
+	if (iter->actual == NULL) {
+		return NULL;
+	}
+	if (iter->actual == *(iter->primero)) {
+		(*iter->primero) = iter->actual->prox;
+	}
+	if (iter->actual == *(iter->ultimo)) {
+		(*iter->ultimo) = iter->anterior;
+	}
+	iter->actual = nodo_aux->prox;
+	if (iter->actual != *(iter->primero)){
+		iter->anterior->prox = nodo_aux->prox;
+	}
 	void* dato = nodo_aux->dato;
 	free(nodo_aux);
+	(*iter->largo)--;
 	return dato;
 }

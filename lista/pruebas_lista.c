@@ -147,7 +147,7 @@ static void prueba_destruir_lista_y_no_datos(void){
     *valor = 5;
     lista_insertar_primero(lista, valor);
     int* valor_tope = lista_ver_primero(lista);
-    print_test("La lista se encolo correctamente", *valor_tope == *valor);
+    print_test("El valor se inserto correctamente", *valor_tope == *valor);
     lista_destruir(lista, NULL);
     print_test("La lista se destruyo y su datos no", *valor == 5);
     free(valor);
@@ -160,7 +160,7 @@ static void prueba_destruir_lista_y_datos_con_free(void){
     *valor = 5;
     lista_insertar_primero(lista, valor);
     int* valor_tope = lista_ver_primero(lista);
-    print_test("La lista se encolo correctamente", *valor_tope == *valor);
+    print_test("El valor se inserto correctamente", *valor_tope == *valor);
     lista_destruir(lista, free);
 }
 
@@ -171,7 +171,7 @@ static void prueba_destruir_lista_y_datos_con_fucion(void){
     *valor = 5;
     lista_insertar_primero(lista, valor);
     int* valor_tope = lista_ver_primero(lista);
-    print_test("La lista se encolo correctamente", *valor_tope == *valor);
+    print_test("El valor se inserto correctamente", *valor_tope == *valor);
     lista_destruir(lista, destruir_datos);
 }
 
@@ -194,10 +194,10 @@ static void prueba_general_lista(void){
     lista_t* lista = lista_crear();
     int* valor1 = malloc(sizeof(int));
     *valor1 = 1;
-    char* valor2 = malloc(sizeof(char));
+    char** valor2 = malloc(4*sizeof(char*));
     *valor2 = "dos";
     float* valor3 = malloc(sizeof(float));
-    *valor2 = 3.00;
+    *valor3 = 3.00;
     int* valor4 = malloc(sizeof(int));
     *valor4 = 4;
     int* valor5 = malloc(sizeof(int));
@@ -209,11 +209,273 @@ static void prueba_general_lista(void){
     print_test("Se borro el primer elemento", lista_borrar_primero(lista) == valor1);
     print_test("Se inserto un elemento al final", lista_insertar_ultimo(lista, valor5));
     print_test("La lista no esta vacia", !lista_esta_vacia(lista));
-    print_test("El primer elemento es el correspondiente", lista_ver_primero(lista) == valor5);
+    print_test("El primer elemento es el correspondiente", lista_ver_primero(lista) == valor2);
     print_test("El ultimo elemento es el correspondiente", lista_ver_ultimo(lista) == valor5);
-    int* valor_ultimo = lista_ver_ultimo(lista);
-    print_test("Se puede ver el primero", valor_tope == valor1);
-    lista_destruir(lista, destruir_datos);
+    free(valor1);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_crear(void){
+    lista_t* lista = lista_crear();
+    print_test("La lista fue creada", lista != NULL);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, NULL);
+}
+
+static void prueba_iter_avanzar_y_ver_actual(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 5;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 10;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    print_test("El iterador apunta al primer dato", lista_iter_ver_actual(iter) == valor1);
+    print_test("El iterador avanzo correctamente", lista_iter_avanzar(iter));
+    print_test("El iterador apunta al proximo dato", lista_iter_ver_actual(iter) == valor2);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_al_final(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 5;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 10;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    print_test("El iterador no apunta al ultimo dato", !lista_iter_al_final(iter));
+    lista_iter_avanzar(iter);
+    lista_iter_avanzar(iter);
+    print_test("El iterador apunta al ultimo dato", lista_iter_al_final(iter));
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_destruir(void){
+    lista_t* lista = lista_crear();
+    print_test("La lista fue creada", lista != NULL);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, NULL);
+}
+
+static void prueba_iter_insertar_al_principio(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    print_test("El iterador apunta al primer dato", lista_iter_ver_actual(iter) == valor1);
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    print_test("El iter inserto correctamente", lista_iter_insertar(iter, valor3));
+    print_test("El valor se inserto al principio", lista_ver_primero(lista) == valor3);
+    print_test("El iter apunta al primer dato", lista_ver_primero(lista) == lista_iter_ver_actual(iter));
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_insertar_al_final(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    lista_iter_avanzar(iter);
+    lista_iter_avanzar(iter);
+    print_test("El iter esta al final", lista_iter_al_final(iter));
+    print_test("El iter apunta a NULL", lista_iter_ver_actual(iter) == NULL);
+    print_test("El iter inserto correctamente", lista_iter_insertar(iter, valor3));
+    print_test("El valor se inserto al final", lista_ver_ultimo(lista) == valor3);
+    print_test("El iter apunta al ultimo dato", lista_iter_ver_actual(iter) == valor3);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_insertar_en_el_medio(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    lista_iter_avanzar(iter);
+    print_test("El iter esta en la segunda posicion", lista_iter_ver_actual(iter) == valor2);
+    print_test("El iter inserto correctamente", lista_iter_insertar(iter, valor3));
+    print_test("El valor se inserto en el medio", lista_ver_ultimo(lista) == valor2 && lista_ver_primero(lista) == valor1);
+    print_test("El iter apunta al dato del medio", lista_iter_ver_actual(iter) == valor3);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_borrar_al_principio(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_insertar_ultimo(lista, valor3);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    print_test("El iterador apunta al primer dato", lista_iter_ver_actual(iter) == valor1);
+    print_test("El iter borro correctamente", lista_iter_borrar(iter) == valor1);
+    print_test("Lista ver primero apunta al proximo dato", lista_ver_primero(lista) == valor2);
+    print_test("El iter apunta al primer dato", lista_ver_primero(lista) == lista_iter_ver_actual(iter));
+    free(valor1);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+}
+
+static void prueba_iter_borrar_al_final(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_insertar_ultimo(lista, valor3);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    lista_iter_avanzar(iter);
+    lista_iter_avanzar(iter);
+    print_test("El iter esta en el ultimo elemento", lista_iter_ver_actual(iter) == lista_ver_ultimo(lista));
+    print_test("El iter borro el ultimo elemento", lista_iter_borrar(iter) == valor3);
+    print_test("Lista ver ultimo devuelve el penultimo dato insertado", lista_ver_ultimo(lista) == valor2);
+    print_test("El iter apunta al NULL", lista_iter_ver_actual(iter) == NULL);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+    free(valor3);
+}
+
+static void prueba_iter_borrar_en_el_medio(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_insertar_ultimo(lista, valor3);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    lista_iter_avanzar(iter);
+    print_test("El iter esta en el medio posicion", lista_iter_ver_actual(iter) == valor2);
+    print_test("El iter borro el elemento correspondiente", lista_iter_borrar(iter) == valor2);
+    print_test("El iter apunta al siguiente elemento", lista_iter_ver_actual(iter) == valor3);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, free);
+    free(valor2);
+}
+
+static void prueba_iter_borrar_todo(void){
+    lista_t* lista = lista_crear();
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    lista_insertar_primero(lista, valor1);
+    lista_iter_t *iter = lista_iter_crear(lista);
+    print_test("El iterador fue creado", iter != NULL);
+    print_test("El iter esta en la primer posicion", lista_iter_ver_actual(iter) == valor1);
+    print_test("El iter borro el elemento correspondiente", lista_iter_borrar(iter) == valor1);
+    print_test("El iter apunta al NULL", lista_iter_ver_actual(iter) == NULL);
+    print_test("El iter borrar devuelve NULL", lista_iter_borrar(iter) == NULL);
+    lista_iter_destruir(iter);
+    lista_destruir(lista, NULL);
+    free(valor1);
+}
+
+bool buscar_pos_valor3(void *elemento, void *extra) {
+    int *contador = extra;
+    int *valor = elemento;
+    if (*valor == 3){
+        return false;
+    }
+    ++(*contador);
+    return true;
+}
+
+static void prueba_iter_interno_con_corte(void){
+    lista_t* lista = lista_crear();
+    print_test("La lista fue creada", lista != NULL);
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    int* valor4 = malloc(sizeof(int));
+    *valor4 = 4;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_insertar_ultimo(lista, valor3);
+    lista_insertar_ultimo(lista, valor4);
+    print_test("El primer elemento es el correspondiente", lista_ver_primero(lista) == valor1);
+    print_test("El ultimo elemento es el correspondiente", lista_ver_ultimo(lista) == valor4);
+    int pos_valor3 = 0;
+    lista_iterar(lista, buscar_pos_valor3, &pos_valor3);
+    print_test("La posicion del valor3 es correcta", pos_valor3 == 2);
+    lista_destruir(lista, free);
+}
+
+bool contar_cant_datos(void *elemento, void *extra) {
+    int *contador = extra;
+    ++(*contador);
+    return true;
+} 
+
+static void prueba_iter_interno_sin_corte(void){
+    lista_t* lista = lista_crear();
+    print_test("La lista fue creada", lista != NULL);
+    int* valor1 = malloc(sizeof(int));
+    *valor1 = 1;
+    int* valor2 = malloc(sizeof(int));
+    *valor2 = 2;
+    int* valor3 = malloc(sizeof(int));
+    *valor3 = 3;
+    int* valor4 = malloc(sizeof(int));
+    *valor4 = 4;
+    lista_insertar_primero(lista, valor1);
+    lista_insertar_ultimo(lista, valor2);
+    lista_insertar_ultimo(lista, valor3);
+    lista_insertar_ultimo(lista, valor4);
+    print_test("El primer elemento es el correspondiente", lista_ver_primero(lista) == valor1);
+    print_test("El ultimo elemento es el correspondiente", lista_ver_ultimo(lista) == valor4);
+    int cant_datos = 0;
+    lista_iterar(lista, contar_cant_datos, &cant_datos);
+    print_test("La cantidad de datos es correcta", cant_datos == 4);
+    lista_destruir(lista, free);
 }
 
 void pruebas_lista_estudiante() {
@@ -233,20 +495,19 @@ void pruebas_lista_estudiante() {
     prueba_destruir_lista_vacia_y_datos_con_free();
     prueba_destruir_lista_vacia_y_datos_con_fucion();
     prueba_general_lista();
-    //prueba_iter_crear();
-    //prueba_iter_avanzar();
-    //prueba_iter_ver_actual();
-    //prueba_iter_al_final();
-    //prueba_iter_destruir();
-    //prueba_iter_insertar_al_principio();
-    //prueba_iter_insertar_al_final();
-    //prueba_iter_insertar_en_el_medio();
-    //prueba_iter_borrar_al_principio();
-    //prueba_iter_borrar_al_final();
-    //prueba_iter_borrar_en_el_medio();
-    //prueba_iter_borrar();
-    //prueba_iter_interno_con_corte();
-    //prueba_iter_interno_sin_corte();
+    prueba_iter_crear();
+    prueba_iter_avanzar_y_ver_actual();
+    prueba_iter_al_final();
+    prueba_iter_destruir();
+    prueba_iter_insertar_al_principio();
+    prueba_iter_insertar_al_final();
+    prueba_iter_insertar_en_el_medio();
+    prueba_iter_borrar_al_principio();
+    prueba_iter_borrar_al_final();
+    prueba_iter_borrar_en_el_medio();
+    prueba_iter_interno_con_corte();
+    prueba_iter_interno_sin_corte();
+    prueba_iter_borrar_todo();
 }
 
 /*

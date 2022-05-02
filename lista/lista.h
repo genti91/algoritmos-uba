@@ -89,9 +89,11 @@ lista_iter_t *lista_iter_crear(lista_t *lista);
 // Post: devuelve verdadero si el iterador avanzó, falso en el caso contrario.
 bool lista_iter_avanzar(lista_iter_t *iter);
 
-// Obtiene el valor del elemento al que apunta el iterador actualmente.
+// Obtiene el valor del elemento al que apunta el iterador actualmente. Si
+// el iterador está en el final, devuelve NULL.
 // Pre: el iterador fue creado.
 // Post: se devolvió el elemento al que apunta el iterador en el momento.
+// Si el iterador estaba en el final, se devuelve NULL.
 void *lista_iter_ver_actual(const lista_iter_t *iter);
 
 // Determina si el iterador está apuntando al último elemento de la lista.
@@ -106,17 +108,19 @@ bool lista_iter_al_final(const lista_iter_t *iter);
 void lista_iter_destruir(lista_iter_t *iter);
 
 // Agrega un nuevo elemento en el índice donde apunta el iterador y el
-// iterador apunta a este nuevo elemento.
+// iterador apunta a este nuevo elemento. En caso de error devuelve falso,
+// verdadero en lo contrario.
 // Pre: el iterador fue creado.
 // Post: se agregó un nuevo elemento en el índice donde apunta el iterador.
 // El iterador sigue en el mismo índice, apuntando al nuevo elemento.
 bool lista_iter_insertar(lista_iter_t *iter, void *dato);
 
 // Saca el elemento del índice donde apunta el iterador y el iterador apunta
-// al siguiente elemento.
+// al siguiente elemento. Si el iterador está al final, devuelve NULL.
 // Pre: el iterador fue creado.
-// Post: se eliminó un nuevo elemento en el índice donde apunta el iterador.
-// El iterador sigue en el mismo índice, apuntando al siguiente elemento.
+// Post: se eliminó un nuevo elemento en el índice donde apunta el iterador y
+// se lo devolvió. El iterador sigue en el mismo índice, apuntando al siguiente elemento.
+// En el caso que el iterador haya estado en el final, devuelve NULL sin hacer nada.
 void *lista_iter_borrar(lista_iter_t *iter);
 
 /* *****************************************************************
