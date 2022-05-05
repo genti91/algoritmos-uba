@@ -3,8 +3,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define CANT_MIN_PARAMETROS 2
+#define CANT_MAX_PARAMETROS 3
+#define POS_MAX_CHAR_EN_ARGV 1
+#define POS_NOMBRE_ARCH_EN_ARGV 2
+
 bool chequear_parametros(int argc, char const *argv){
-    if (argc < 2 || argc > 3 || !atoi(argv)){
+    if (argc < CANT_MIN_PARAMETROS || argc > CANT_MAX_PARAMETROS || !atoi(argv)){
         fputs("Error: Cantidad erronea de parametros\n", stderr);
         return false;
     }
@@ -36,15 +41,15 @@ void separar_texto(FILE* texto, int max_chars){
 }
 
 int main(int argc, char const *argv[]){
-    if (!chequear_parametros(argc, argv[1])){
+    if (!chequear_parametros(argc, argv[POS_MAX_CHAR_EN_ARGV])){
         return -1;
     }
     
-    int max_chars = atoi(argv[1]);
+    int max_chars = atoi(argv[POS_MAX_CHAR_EN_ARGV]);
     FILE* texto = stdin;
 
-    if (argc == 3){
-        texto = abrir_archivo(argv[2]);
+    if (argc == CANT_MAX_PARAMETROS){
+        texto = abrir_archivo(argv[POS_NOMBRE_ARCH_EN_ARGV]);
         if (texto == NULL){
             return -1;
         }
@@ -52,7 +57,7 @@ int main(int argc, char const *argv[]){
 
     separar_texto(texto, max_chars);
 
-    if (argc == 3){
+    if (argc == CANT_MAX_PARAMETROS){
         fclose(texto);
     }
 
