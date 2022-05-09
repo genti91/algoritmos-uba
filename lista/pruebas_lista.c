@@ -1,11 +1,12 @@
 #include "lista.h"
 #include "testing.h"
 #include <stdlib.h>
+#include "pila.h"
 
 #define CANTIDAD_DE_DATOS_A_INSERTAR 500
 
-void destruir_datos(void* dato){
-    free(dato);
+void destruir_pila_envoltorio(void *puntero) {
+	pila_destruir(puntero); 
 }
 
 static void prueba_lista_crear(void) {
@@ -53,7 +54,7 @@ static void prueba_lista_ver_primero(void) {
     lista_insertar_primero(lista, valor1);
     int* valor_tope = lista_ver_primero(lista);
     print_test("Se puede ver el primero", *valor_tope == 10);
-    lista_destruir(lista, destruir_datos);
+    lista_destruir(lista, free);
 }
 
 static void prueba_lista_insertar_ultimo(void) {
@@ -136,6 +137,7 @@ void prueba_lista_volumen(size_t volumen) {
 			return;
 		}
 	}
+    print_test("Borrar lista vaciada devuelve NULL", lista_borrar_primero(lista) == NULL);
 	print_test("La lista esta vacia: se pudo manejar exitosamente el volumen", lista_esta_vacia(lista));
 	lista_destruir(lista, NULL);
 }
@@ -167,12 +169,16 @@ static void prueba_destruir_lista_y_datos_con_free(void){
 static void prueba_destruir_lista_y_datos_con_fucion(void){
     lista_t* lista = lista_crear();
     print_test("La lista fue creada", lista != NULL);
-    int* valor = malloc(sizeof(int));
-    *valor = 5;
-    lista_insertar_primero(lista, valor);
-    int* valor_tope = lista_ver_primero(lista);
-    print_test("El valor se inserto correctamente", *valor_tope == *valor);
-    lista_destruir(lista, destruir_datos);
+	pila_t *pila1 = pila_crear();
+	pila_t *pila2 = pila_crear();
+	pila_t *pila3 = pila_crear();
+    lista_insertar_primero(lista, pila1);
+    print_test("Una pila se inserto correctamente", lista_ver_primero(lista) == pila1);
+    lista_insertar_primero(lista, pila2);
+    print_test("Una pila se inserto correctamente", lista_ver_primero(lista) == pila2);
+    lista_insertar_primero(lista, pila3);
+    print_test("Una pila se inserto correctamente", lista_ver_primero(lista) == pila3);
+    lista_destruir(lista, destruir_pila_envoltorio);
 }
 
 static void prueba_destruir_lista_vacia_y_no_datos(void){
@@ -187,7 +193,7 @@ static void prueba_destruir_lista_vacia_y_datos_con_free(void){
 
 static void prueba_destruir_lista_vacia_y_datos_con_fucion(void){
     lista_t* lista = lista_crear();
-    lista_destruir(lista, destruir_datos);
+    lista_destruir(lista, destruir_pila_envoltorio);
 }
 
 static void prueba_general_lista(void){
@@ -426,6 +432,11 @@ bool buscar_pos_valor3(void *elemento, void *extra) {
     return true;
 }
 
+bool sumar_uno_a_todos(void *elemento, void *extra) {
+    ++*((int*)elemento);
+    return true;
+}
+
 static void prueba_iter_interno_con_corte(void){
     lista_t* lista = lista_crear();
     print_test("La lista fue creada", lista != NULL);
@@ -446,6 +457,10 @@ static void prueba_iter_interno_con_corte(void){
     int pos_valor3 = 0;
     lista_iterar(lista, buscar_pos_valor3, &pos_valor3);
     print_test("La posicion del valor3 es correcta", pos_valor3 == 2);
+    lista_iterar(lista, sumar_uno_a_todos, NULL);
+    print_test("Se le sumo uno a todos", *(int*)lista_ver_primero(lista) == 2 && *(int*)lista_ver_ultimo(lista) == 5);
+    lista_iterar(lista, sumar_uno_a_todos, NULL);
+    print_test("Se le sumo una a todos", *(int*)lista_ver_primero(lista) == 3 && *(int*)lista_ver_ultimo(lista) == 6);
     lista_destruir(lista, free);
 }
 
@@ -478,6 +493,45 @@ static void prueba_iter_interno_sin_corte(void){
     lista_destruir(lista, free);
 }
 
+void prueba_iterador_volumen(size_t volumen) {
+	lista_t *lista = lista_crear();
+	print_test("Se creo una lista vacia para prueba de volumen", lista_esta_vacia(lista));
+	int arreglo_int[volumen];
+	for (int i = 0; i < volumen; i++) {
+		arreglo_int[i] = i;
+	}
+    lista_iter_t* iter = lista_iter_crear(lista);
+	for (int i = 0; i < volumen; i++) {
+		if (!lista_iter_insertar(iter, &arreglo_int[i])) {
+			print_test("Falló el insertar en la prueba de volumen", false);
+			lista_iter_destruir(iter);
+            lista_destruir(lista, NULL);
+			return;
+        }
+        lista_iter_avanzar(iter);
+    }
+    lista_iter_destruir(iter);
+    iter = lista_iter_crear(lista);
+    for (int i = 0; i < volumen; i++) {
+		if (&arreglo_int[i] != lista_iter_ver_actual(iter)) {
+			print_test("El primer elemento no es el correspondiente en la prueba de volumen de iterador externo. La prueba se frena", false);
+			lista_iter_destruir(iter);
+            lista_destruir(lista, NULL);
+			return;
+		}
+		if (&arreglo_int[i] != lista_iter_borrar(iter)) {
+			print_test("El elemento borrado no es el correspondiente en la prueba de volumen de iterador externo. La prueba se frena", false);
+			lista_iter_destruir(iter);
+            lista_destruir(lista, NULL);
+			return;
+		}
+	}
+    lista_iter_destruir(iter);
+    print_test("Borrar lista vaciada devuelve NULL", lista_borrar_primero(lista) == NULL);
+	print_test("La lista esta vacia: se pudo manejar exitosamente el volumen", lista_esta_vacia(lista));
+	lista_destruir(lista, NULL);
+}
+
 void pruebas_lista_estudiante() {
     prueba_lista_crear();
     prueba_lista_insertar_primero();
@@ -508,6 +562,7 @@ void pruebas_lista_estudiante() {
     prueba_iter_interno_con_corte();
     prueba_iter_interno_sin_corte();
     prueba_iter_borrar_todo();
+    prueba_iterador_volumen(CANTIDAD_DE_DATOS_A_INSERTAR);
 }
 
 /*
