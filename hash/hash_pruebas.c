@@ -225,7 +225,6 @@ static void prueba_hash_volumen(size_t largo, bool debug)
         sprintf(claves[i], "%08d", i);
         *valores[i] = i;
         ok = hash_guardar(hash, claves[i], valores[i]);
-        printf("%i\n", (int)i);
         if (!ok) break;
     }
 
@@ -254,20 +253,19 @@ static void prueba_hash_volumen(size_t largo, bool debug)
 
     /* Destruye el hash y crea uno nuevo que sí libera */
     hash_destruir(hash);
-    hash_t* hash1 = hash_crear(NULL);
+    hash = hash_crear(free);
+
     /* Inserta 'largo' parejas en el hash */
     ok = true;
-    printf("hola\n");
     for (size_t i = 0; i < largo; i++) {
-        printf("%ld\n", i);
-        ok = hash_guardar(hash1, claves[i], valores[i]);
+        ok = hash_guardar(hash, claves[i], valores[i]);
         if (!ok) break;
     }
-    printf("hola\n");
+
     free(claves);
 
     /* Destruye el hash - debería liberar los enteros */
-    hash_destruir(hash1);
+    hash_destruir(hash);
 
 }
 
@@ -364,7 +362,6 @@ static void prueba_hash_iterar_volumen(size_t largo)
             break;
         }
         clave = hash_iter_ver_actual(iter);
-        //printf("%s", clave);
         if ( clave == NULL ) {
             ok = false;
             break;
@@ -411,9 +408,9 @@ void pruebas_hash_catedra()
     prueba_hash_borrar();
     prueba_hash_clave_vacia();
     prueba_hash_valor_null();
-    prueba_hash_volumen(40, true);
+    prueba_hash_volumen(5000, true);
     prueba_hash_iterar();
-    prueba_hash_iterar_volumen(40);
+    prueba_hash_iterar_volumen(5000);
 }
 
 void pruebas_volumen_catedra(size_t largo)

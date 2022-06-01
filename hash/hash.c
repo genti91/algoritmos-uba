@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 
 #define TAM_INICIAL 37
 #define EXPANDIR_CAPACIDAD 2
@@ -46,117 +45,100 @@ uint32_t func_hashing(const uint8_t* key, size_t largo_clave, size_t capacidad) 
   return hash % (uint32_t)capacidad;
 }
 
-hash_t *hash_crear_con_tam(hash_destruir_dato_t destruir_dato, size_t tam) {
-    hash_t* hash = malloc(sizeof(hash_t));
-    if (hash == NULL) return NULL;
-    hash->arreglo = malloc(tam*sizeof(campo_t));
-    hash->cantidad = 0;
-    hash->capacidad = tam;
-    hash->cant_borrados = 0;
-    hash->destruir_dato = destruir_dato;
-    for (int i = 0; i < tam; i++){
-        hash->arreglo[i].clave = NULL;
-        hash->arreglo[i].dato = NULL;
-        hash->arreglo[i].estado = VACIO;
+campo_t *arreglo_crear(size_t tam){
+    campo_t* arreglo = malloc(tam*sizeof(campo_t));
+    if (arreglo == NULL) {
+        return NULL;
     }
-    return hash;
+    for (size_t i = 0; i < tam; i++){
+        arreglo[i].clave = NULL;
+        arreglo[i].dato = NULL;
+        arreglo[i].estado = VACIO;
+    }
+    return arreglo;
 }
 
 hash_t *hash_crear(hash_destruir_dato_t destruir_dato){
-    return hash_crear_con_tam(destruir_dato, TAM_INICIAL);;
+    hash_t* hash = malloc(sizeof(hash_t));
+    if (hash == NULL) return NULL;
+    hash->arreglo = arreglo_crear(TAM_INICIAL);
+    if (hash->arreglo == NULL) {
+        free(hash);
+        return NULL;
+    }
+    hash->cantidad = 0;
+    hash->cant_borrados = 0;
+    hash->capacidad = TAM_INICIAL;
+    hash->destruir_dato = destruir_dato;
+    return hash;
 }
 
-bool hash_insertar(hash_t *hash, const char *clave, void *dato, size_t hash_pos){
-    char* clave_aux = malloc(sizeof(char)*strlen(clave)+1);
-    if (clave_aux == NULL) return false;
-    if (hash->arreglo[hash_pos].clave != NULL) {
-        free(hash->arreglo[hash_pos].clave);
-    }
-    hash->arreglo[hash_pos].clave = clave_aux;
-    strcpy(hash->arreglo[hash_pos].clave, clave);
-    if (hash->arreglo[hash_pos].estado != OCUPADO) {
-        hash->cantidad++;
-    }
-    hash->arreglo[hash_pos].dato = dato;
-    hash->arreglo[hash_pos].estado = OCUPADO;
-    return true;
-}
-
-size_t buscar_clave(const hash_t *hash, size_t pos, const char *clave){
+size_t buscar_clave(const campo_t *arreglo, size_t pos, const char *clave, size_t capacidad){
     size_t pos_nueva = pos;
-    if (hash->cantidad == 0) {
-        return -1;
-    }
     do {
-        if (hash->arreglo[pos_nueva].clave != NULL && !strcmp(hash->arreglo[pos_nueva].clave, clave)){
+        if (arreglo[pos_nueva].clave != NULL && !strcmp(arreglo[pos_nueva].clave, clave)){
             return pos_nueva;
         }
-        if (hash->arreglo[pos_nueva].estado == VACIO) {
+        if (arreglo[pos_nueva].estado == VACIO) {
             return -1;
         }
         pos_nueva++;
-        if (pos_nueva == hash->capacidad) {
+        if (pos_nueva == capacidad) {
             pos_nueva = 0;
         }
     }
     while (pos != pos_nueva);
-
     return pos_nueva;
 }
 
-void hash_guardar_en_posicion(hash_t *hash, const char *clave, void *dato) {
-    size_t hash_pos = func_hashing((uint8_t*)clave, strlen(clave), hash->capacidad);
-    size_t hash_pos_nueva = buscar_clave(hash, hash_pos, clave);
+bool hash_insertar(campo_t *arreglo, const char *clave, void *dato, size_t capacidad, size_t *cantidad, hash_destruir_dato_t destruir_dato) {
+    size_t hash_pos = func_hashing((uint8_t*)clave, strlen(clave), capacidad);
+    size_t hash_pos_nueva = buscar_clave(arreglo, hash_pos, clave, capacidad);
     if (hash_pos_nueva == -1) {
-        for (int i = 0; i < hash->capacidad; i++) {
-            if (hash->arreglo[hash_pos].estado != OCUPADO) {
-                hash_insertar(hash, clave, dato, hash_pos);
+        while (true) {
+            if (arreglo[hash_pos].estado != OCUPADO) {
+                char* clave_aux = malloc(sizeof(char)*strlen(clave)+1);
+                if (clave_aux == NULL) return false;
+                arreglo[hash_pos].clave = clave_aux;
+                strcpy(arreglo[hash_pos].clave, clave);
+                arreglo[hash_pos].dato = dato;
+                arreglo[hash_pos].estado = OCUPADO;
+                (*cantidad)++;
                 break;
             }
             hash_pos++;
-            if (hash_pos == hash->capacidad) {
+            if (hash_pos == capacidad) {
                 hash_pos = 0;
             }
         }
     } else {
-        if (hash->destruir_dato != NULL){
-            hash->destruir_dato(hash->arreglo[hash_pos_nueva].dato);
+        if (destruir_dato != NULL){
+            destruir_dato(arreglo[hash_pos_nueva].dato);
         }
-        hash_insertar(hash, clave, dato, hash_pos_nueva);
+        arreglo[hash_pos_nueva].dato = dato;
+        arreglo[hash_pos_nueva].estado = OCUPADO;
     }
+    return true;
 }
 
-hash_t *redimensionar(hash_t *hash, size_t tam){
-    hash_t* hash_nuevo = hash_crear_con_tam(hash->destruir_dato, tam);
-    if (hash_nuevo == NULL) return NULL;
-    printf("no falla crear\n");
-    //hash->capacidad /= 2;
-    printf("capacidad: %ld\n", (size_t)hash->capacidad);
-    printf("cantidad: %ld\n", (size_t)hash->cantidad);
+campo_t *hash_redimensionar_arreglo(hash_t *hash, size_t tam){
+    campo_t* arreglo_nuevo = arreglo_crear(tam);
+    if (arreglo_nuevo == NULL) return NULL;
+    hash->cantidad = 0;
+    hash->cant_borrados = 0;
     for (size_t i = 0; i < hash->capacidad; i++){
-        printf("for: %li\n", i);
         if (hash->arreglo[i].estado == OCUPADO){
-            printf("entro al if\n");
-            hash_guardar_en_posicion(hash_nuevo, hash->arreglo[i].clave, hash->arreglo[i].dato);
-            printf("no falla guardar en %ld posicion\n", i);
+            hash_insertar(arreglo_nuevo, hash->arreglo[i].clave, hash->arreglo[i].dato, hash->capacidad * EXPANDIR_CAPACIDAD, &(hash->cantidad), hash->destruir_dato);      
         }
     }
-    return hash_nuevo;
+    return arreglo_nuevo;
 }
 
-void hash_destruir_aux(hash_t *hash, int red){
+void destruir_arreglo(hash_t *hash){
     for (size_t i = 0; i < hash->capacidad; i++){
-        if (hash->destruir_dato != NULL && hash->arreglo[i].estado == OCUPADO && red == 0){
-            hash->destruir_dato(hash->arreglo[i].dato);
-        }
         free(hash->arreglo[i].clave);
     }
     free(hash->arreglo);
-    free(hash);
-}
-
-void hash_destruir(hash_t *hash){
-    hash_destruir_aux(hash, 0);
 }
 
 bool factor_de_carga(hash_t *hash, double factor_de_carga){
@@ -168,33 +150,34 @@ bool factor_de_carga(hash_t *hash, double factor_de_carga){
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato){
     if (factor_de_carga(hash, FACTOR_CARGA_LIM)) {
-        hash_t *hash_nuevo = redimensionar(hash, hash->cantidad*EXPANDIR_CAPACIDAD);
-        if (hash_nuevo == NULL) {
+        campo_t* arreglo_nuevo = hash_redimensionar_arreglo(hash, hash->capacidad*EXPANDIR_CAPACIDAD);
+        if (arreglo_nuevo == NULL) {
             return false;
         }
-        printf("no falla nada antes de destruir");
-        hash_destruir_aux(hash, 1);
-        printf("no falla destruir dps de redimension");
-        *hash = *hash_nuevo;
+        destruir_arreglo(hash);
+        hash->capacidad = hash->capacidad*EXPANDIR_CAPACIDAD;
+        hash->arreglo = arreglo_nuevo;
     }
-
-    hash_guardar_en_posicion(hash, clave, dato);
+    hash_insertar(hash->arreglo, clave, dato, hash->capacidad, &(hash->cantidad), hash->destruir_dato);
     return true;
 }
 
 void *hash_borrar(hash_t *hash, const char *clave){
     if (!hash_pertenece(hash, clave)) return NULL;
-    if (factor_de_carga(hash, FACTOR_CARGA_MIN)) {
-        hash_t *hash_nuevo = redimensionar(hash, hash->cantidad/REDUCIR_CAPACIDAD);
-        if (hash_nuevo == NULL) {
-            return false;
+    if (factor_de_carga(hash, FACTOR_CARGA_MIN) && hash->capacidad >= TAM_INICIAL) {
+        campo_t* arreglo_nuevo = hash_redimensionar_arreglo(hash, hash->cantidad/EXPANDIR_CAPACIDAD);
+        if (arreglo_nuevo != NULL) {
+            destruir_arreglo(hash);
+            hash->capacidad = hash->capacidad/EXPANDIR_CAPACIDAD;
+            hash->arreglo = arreglo_nuevo;
         }
-        hash_destruir_aux(hash, 1);
-        *hash = *hash_nuevo;
     }
     size_t hash_pos = func_hashing((uint8_t*)clave, strlen(clave), hash->capacidad);
-    hash_pos = buscar_clave(hash, hash_pos, clave);
+    hash_pos = buscar_clave(hash->arreglo, hash_pos, clave, hash->capacidad);
+    char* clave_aux = realloc(hash->arreglo[hash_pos].clave, sizeof(char)*2);
+    if (clave_aux == NULL) return false;
     void* dato = hash->arreglo[hash_pos].dato;
+    hash->arreglo[hash_pos].clave = clave_aux;
     free(hash->arreglo[hash_pos].clave);
     hash->arreglo[hash_pos].clave = NULL;
     hash->arreglo[hash_pos].dato = NULL;
@@ -207,7 +190,7 @@ void *hash_borrar(hash_t *hash, const char *clave){
 void *hash_obtener(const hash_t *hash, const char *clave){
     if (!hash_pertenece(hash, clave)) return NULL;
     size_t hash_pos = func_hashing((uint8_t*)clave, strlen(clave), hash->capacidad);
-    return hash->arreglo[buscar_clave(hash, hash_pos, clave)].dato;
+    return hash->arreglo[buscar_clave(hash->arreglo, hash_pos, clave, hash->capacidad)].dato;
 }
     
 bool hash_pertenece(const hash_t *hash, const char *clave){
@@ -215,17 +198,25 @@ bool hash_pertenece(const hash_t *hash, const char *clave){
     if (hash->cantidad == 0) {
         return false;
     }
-    if (buscar_clave(hash, hash_pos, clave) != -1) {
+    if (buscar_clave(hash->arreglo, hash_pos, clave, hash->capacidad) != -1) {
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
     
 size_t hash_cantidad(const hash_t *hash){
     return hash->cantidad;
 }
 
+void hash_destruir(hash_t *hash){
+    for (size_t i = 0; i < hash->capacidad; i++){
+        if (hash->destruir_dato != NULL && hash->arreglo[i].estado == OCUPADO){
+            hash->destruir_dato(hash->arreglo[i].dato);
+        }
+    }
+    destruir_arreglo(hash);
+    free(hash);
+}
 
 hash_iter_t *hash_iter_crear(const hash_t *hash){
     hash_iter_t* iter = malloc(sizeof(hash_iter_t));
