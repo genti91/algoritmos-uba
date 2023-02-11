@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "stdbool.h": "c",
+        "cstdio": "c",
+        "vector_creciente.h": "c",
+        "tp2.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "vector": "c",
+        "memory": "c",
+        "optional": "c",
+        "string_view": "c",
+        "string": "c",
+        "system_error": "c",
+        "sstream": "c"
+    }
+}

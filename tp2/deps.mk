@@ -1,0 +1,1 @@
+algogram: postusuario.o tp2.o algogram.o hash.o abb.o pila.o vector_creciente.o heap.o
